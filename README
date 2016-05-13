@@ -16,6 +16,6 @@ NOT Working:
 Instruction:
 export ARCH=arm
 export CROSS_COMPILE=~/PATH
-make a369i
+make a369i_defconfig
 make -j5 2<&1 | tee build.log
 and wait.
