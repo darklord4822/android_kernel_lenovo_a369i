@@ -103,7 +103,7 @@ FHD   1920x1080  2key ( (160,2100);(920,2100) )           3key  ( (160,2100);(54
 #define TPD_TYPE_CAPACITIVE
 #define TPD_TYPE_RESISTIVE
 #define TPD_POWER_SOURCE         
-#define TPD_I2C_NUMBER           				2
+#define TPD_I2C_NUMBER           				1
 #define TPD_WAKEUP_TRIAL         				60
 #define TPD_WAKEUP_DELAY         				100
 #define VELOCITY_CUSTOM
