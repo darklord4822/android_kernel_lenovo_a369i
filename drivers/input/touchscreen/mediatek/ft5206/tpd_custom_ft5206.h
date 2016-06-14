@@ -1,15 +1,3 @@
-/************************************************************************
-* Copyright (C) 2012-2015, Focaltech Systems (R)��All Rights Reserved.
-*
-* File Name: focaltech_ctl.c
-*
-* Author:
-*
-* Created: 2015-01-01
-*
-* Abstract: declare for IC info, Read/Write, reset
-*
-************************************************************************/
 #ifndef TOUCHPANEL_H__
 #define TOUCHPANEL_H__
 
@@ -89,8 +77,6 @@ extern void fts_reset_tp(int HighOrLow);
 
 
 #define TPD_POWER_SOURCE_CUSTOM 10
-#define IIC_PORT                   					2				//MT6572: 1  MT6589:0 , Based on the I2C index you choose for TPM
-
 
 /*
 ///// ***** virtual key  definition  ***** /////
@@ -105,10 +91,10 @@ HD    1280x720    2key ( (120,1350);(600,1350) )           3key  ( (120,1350);(3
 FHD   1920x1080  2key ( (160,2100);(920,2100) )           3key  ( (160,2100);(540,2100);(920,2100) )          4key   ( (160,2100);(320;1080);(600,1080);(920,2100)  )
 */
 #define TPD_HAVE_BUTTON									// if have virtual key,need define the MACRO
-#define TPD_BUTTON_HEIGH        				(40)  			//100
-#define TPD_KEY_COUNT           				3    				//  4
-#define TPD_KEYS                					{ KEY_MENU, KEY_HOMEPAGE, KEY_BACK}
-#define TPD_KEYS_DIM            	{{160,2100,20,TPD_BUTTON_HEIGH},{540,2100,20,TPD_BUTTON_HEIGH},{920,2100,20,TPD_BUTTON_HEIGH}}
+#define TPD_BUTTON_HEIGHT 	810
+#define TPD_KEY_COUNT          	3
+#define TPD_KEYS                {KEY_MENU, KEY_HOMEPAGE, KEY_BACK}
+#define TPD_KEYS_DIM            {{40,1000,60,60},{140,1000,60,60},{240,1000,60,60}}
 
 /*********************Custom Define end*************************************************/
 
