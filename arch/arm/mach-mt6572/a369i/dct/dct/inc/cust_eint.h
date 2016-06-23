@@ -17,6 +17,7 @@ extern "C" {
 #define CUST_EINT_DEBOUNCE_ENABLE           1
 #define CUST_EINT_EDGE_SENSITIVE            0
 #define CUST_EINT_LEVEL_SENSITIVE           1
+#define CUST_EINTF_TRIGGER_FALLING          2
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -26,6 +27,7 @@ extern "C" {
 #define CUST_EINT_TOUCH_PANEL_POLARITY         CUST_EINT_POLARITY_LOW
 #define CUST_EINT_TOUCH_PANEL_SENSITIVE        CUST_EINT_EDGE_SENSITIVE
 #define CUST_EINT_TOUCH_PANEL_DEBOUNCE_EN      CUST_EINT_DEBOUNCE_DISABLE
+#define CUST_EINT_TOUCH_PANEL_TYPE	       CUST_EINTF_TRIGGER_FALLING
 
 #define CUST_EINT_ACCDET_NUM              2
 #define CUST_EINT_ACCDET_DEBOUNCE_CN      256
@@ -65,5 +67,4 @@ extern "C" {
 
 #endif
 #endif //_CUST_EINT_H
-
 
