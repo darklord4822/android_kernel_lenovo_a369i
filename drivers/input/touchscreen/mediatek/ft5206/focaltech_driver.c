@@ -113,8 +113,8 @@ struct touch_info {
     int id[10];
 };
  
-static const struct i2c_device_id ft5206_tpd_id[] = {{"mtk-focal",0},{}};
-static struct i2c_board_info __initdata ft5206_i2c_tpd={ I2C_BOARD_INFO("mtk-focal", (0xС0>>1))};
+static const struct i2c_device_id ft5206_tpd_id[] = {{"mtk-focal",1},{}};
+static struct i2c_board_info __initdata ft5206_i2c_tpd={ I2C_BOARD_INFO("mtk-focal", (0xC0>>1))};
  
 static struct i2c_driver tpd_i2c_driver = {
   	.driver = {
@@ -774,5 +774,4 @@ static void __exit tpd_driver_exit(void) {
  
 module_init(tpd_driver_init);
 module_exit(tpd_driver_exit);
-
 
