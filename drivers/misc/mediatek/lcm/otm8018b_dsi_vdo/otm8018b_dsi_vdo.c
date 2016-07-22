@@ -37,9 +37,6 @@
 
 #define LCM_DSI_CMD_MODE									0
 
-extern void Tinno_Open_Mipi_HS_Read();
-extern void Tinno_Close_Mipi_HS_Read();
-
 #ifndef TRUE
     #define   TRUE     1
 #endif
@@ -79,28 +76,6 @@ static LCM_UTIL_FUNCS lcm_util = {0};
 
 
 static struct LCM_setting_table lcm_initialization_setting[] = {
-	
-	/*
-	Note :
-
-	Data ID will depends on the following rule.
-	
-		count of parameters > 1	=> Data ID = 0x39
-		count of parameters = 1	=> Data ID = 0x15
-		count of parameters = 0	=> Data ID = 0x05
-
-	Structure Format :
-
-	{DCS command, count of parameters, {parameter list}}
-	{REGFLAG_DELAY, milliseconds of time, {}},
-
-	...
-
-	Setting ending by predefined flag
-	
-	{REGFLAG_END_OF_TABLE, 0x00, {}}
-	*/
-
 	{0x00,	1,	{0x00}},
        {0xff,	3,	{0x80, 0x09, 0x01}},
 	{0x00,	1,	{0x80}},
@@ -303,13 +278,9 @@ static void lcm_set_util_funcs(const LCM_UTIL_FUNCS *util)
 static void lcm_get_params(LCM_PARAMS *params)
 {
 		memset(params, 0, sizeof(LCM_PARAMS));
-	
 		params->type   = LCM_TYPE_DSI;
-
 		params->width  = FRAME_WIDTH;
 		params->height = FRAME_HEIGHT;
-
-		// enable tearing-free
 		params->dbi.te_mode 				= LCM_DBI_TE_MODE_VSYNC_ONLY;
 		params->dbi.te_edge_polarity		= LCM_POLARITY_RISING;
 
@@ -318,64 +289,29 @@ static void lcm_get_params(LCM_PARAMS *params)
 #else
 		params->dsi.mode   = BURST_VDO_MODE;
 #endif
-	
-	
-		// DSI
-		/* Command mode setting */
+
 		params->dsi.LANE_NUM				= LCM_TWO_LANE;
-		//The following defined the fomat for data coming from LCD engine.
 		params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
 		params->dsi.data_format.trans_seq   = LCM_DSI_TRANS_SEQ_MSB_FIRST;
 		params->dsi.data_format.padding     = LCM_DSI_PADDING_ON_LSB;
 		params->dsi.data_format.format      = LCM_DSI_FORMAT_RGB888;
-
-		// Highly depends on LCD driver capability.
-		// Not support in MT6573
 		params->dsi.packet_size=256;
-
-		// Video mode setting		
 		params->dsi.intermediat_buffer_num = 2;
-
 		params->dsi.PS=LCM_PACKED_PS_24BIT_RGB888;
 		params->dsi.word_count=480*3;
-
- //edit by Magnum 2013-7-25 , solve esd read id error
-	//	 cycle_time = (4 * 1000 * div2 * div1 * pre_div * post_div)/ (fbk_sel * (fbk_div+0x01) * 26) + 
-	// 1 = 
-  // ui = (1000 * div2 * div1 * pre_div * post_div)/ (fbk_sel * (fbk_div+0x01) * 26 * 2) + 1;
-		
-		
 		params->dsi.vertical_sync_active				= 84;
 		params->dsi.vertical_backporch					= 28;
 		params->dsi.vertical_frontporch					= 28;
-		params->dsi.vertical_active_line				= FRAME_HEIGHT; 
-			//params->dsi.vertical_active_line				= 800; 
-
+		params->dsi.vertical_active_line				= FRAME_HEIGHT;
 		params->dsi.horizontal_sync_active				= 6;
 		params->dsi.horizontal_backporch				= 33;
 		params->dsi.horizontal_frontporch				= 33;
 		params->dsi.horizontal_active_pixel				= FRAME_WIDTH;
 		params->dsi.horizontal_blanking_pixel 				= 60;
-		params->dsi.compatibility_for_nvk = 0;	
-
-		params->dsi.pll_div1=1;		// div1=0,1,2,3;div1_real=1,2,4,4 ----0: 546Mbps  1:273Mbps
-		params->dsi.pll_div2=1;		// div2=0,1,2,3;div1_real=1,2,4,4	
-		params->dsi.fbk_div =28;    // fref=26MHz, fvco=fref*(fbk_div+1)*2/(div1_real*div2_real)	
-
-		/* ESD or noise interference recovery For video mode LCM only. */
-		// Send TE packet to LCM in a period of n frames and check the response.
-	/*	params->dsi.lcm_int_te_monitor = FALSE;
-		params->dsi.lcm_int_te_period = 1;		// Unit : frames
-
-		// Need longer FP for more opportunity to do int. TE monitor applicably.
-		if(params->dsi.lcm_int_te_monitor)
-			params->dsi.vertical_frontporch *= 2;
-		
-		// Monitor external TE (or named VSYNC) from LCM once per 2 sec. (LCM VSYNC must be wired to baseband TE pin.)
-		params->dsi.lcm_ext_te_monitor = FALSE;
-		// Non-continuous clock
-		params->dsi.noncont_clock = TRUE;
-		params->dsi.noncont_clock_period = 2;	// Unit : frames  */
+		params->dsi.compatibility_for_nvk = 0;
+		params->dsi.pll_div1=1;
+		params->dsi.pll_div2=1;	
+		params->dsi.fbk_div =28;
 }
 
 
@@ -394,14 +330,7 @@ static void lcm_init(void)
 
 static void lcm_suspend(void)
 {
-//	esdSwitch = 0;
 	push_table(lcm_deep_sleep_mode_in_setting, sizeof(lcm_deep_sleep_mode_in_setting) / sizeof(struct LCM_setting_table), 1);
-/*	SET_RESET_PIN(1);
-	SET_RESET_PIN(0);
-	MDELAY(10);
-	SET_RESET_PIN(1);
-	MDELAY(20);*/
-	
 }
 
 static struct LCM_setting_table read_protect[] = {
@@ -428,61 +357,17 @@ static unsigned int check_display_normal(void)
 	array[0] = 0x00013700;// set return byte number
 	dsi_set_cmdq(array, 1, 1);
 	read_reg_V2(0x0A, &buffer1, 1);
-	Tinno_Close_Mipi_HS_Read();
-//	read_reg_V2(0x0B, &buffer2, 1);
-//	read_reg_V2(0x0C, &buffer3, 1);
-//	read_reg_V2(0x0D, &buffer4, 1);
-//	normal = buffer[0];
-//	LCM_DBG("[Magnum] --test ic normal == 0x%x , 0x%x , 0x%x , 0x%x\n",buffer1[0],buffer2[0],buffer3[0],buffer4[0]);
 	LCM_DBG("[Magnum] --test ic normal == 0x%x\n",buffer1[0]);
-        if(buffer1[0] == 0x9c)// && buffer2[0] == 0x0 && buffer3[0] == 0x7 && buffer4[0] == 0x0)
+        if(buffer1[0] == 0x9c)
 	 	return 1;
 	else
 		return 0;
 #endif
-
-#if 0
-	return 1;
-	int array[4];
-	char buffer[5];
-	char id_high=0;
-	char id_low=0;
-	int id=0;
-	push_table(lcm_compare_id_setting, sizeof(lcm_compare_id_setting) / sizeof(struct LCM_setting_table), 1);
-
-	array[0] = 0x00053700;// set return byte number
-	dsi_set_cmdq(array, 1, 1);
-
-	read_reg_V2(0xA1, &buffer, 2);//D2
-	LCM_DBG("buffer0 == 0x%02x, buffer1 == 0x%02x \n",buffer[0],buffer[1]);
-
-	id = buffer[0]<<8 |buffer[1]; 
-
-	LCM_DBG("OTM8018B 0x%x , 0x%x , 0x%x \n",buffer[0],buffer[1],id);
-
-	return (id == LCM_ID_OTM8018B)?1:0;
-#endif
 }
-
-/*static unsigned int lcm_esd_check(void)
-{
-	if(esdSwitch == 0){
-		LCM_DBG("[Magnum] --esdSwitch == false\n");
-		return 0;
-	}
-	unsigned int ret=0;
-	ret = check_display_normal();//test_cmp_id();
-	if (ret)
-		return 0;
-	return 1;
-	
-}*/
 #endif
 
 static void lcm_resume(void)
 {
-//	esdSwitch = 1;
-//	lcm_init ();
 	push_table(lcm_sleep_out_setting, sizeof(lcm_sleep_out_setting) / sizeof(struct LCM_setting_table), 1);
 }
 
@@ -541,13 +426,8 @@ static unsigned int lcm_compare_id(void)
 
 	id = buffer[0]<<8 |buffer[1]; 
 
-	#if defined(BUILD_UBOOT)||defined(BUILD_LK)
-		//printf("OTM8018B uboot %s \n", __func__);
-		//printf("%s id = 0x%08x \n", __func__, id);
-		printf("OTM8018B  id = 0x%x \n", __func__, id);
+	#if defined(BUILD_UBOOT)||defined(BUILD_LK);
 	#else
-		//printk("OTM8018B kernel %s \n", __func__);
-		//printk("%s id = 0x%08x \n", __func__, id);
 		printk("OTM8018B 0x%x , 0x%x , 0x%x \n",buffer[0],buffer[1],id);
 	#endif
 #endif
@@ -566,12 +446,7 @@ LCM_DRIVER otm8018b_dsi_vdo_lcm_drv =
 	.suspend        = lcm_suspend,
 	.resume         = lcm_resume,
 	.compare_id    = lcm_compare_id,	
-	#ifndef BUILD_LK
-//	.esd_check = lcm_esd_check,
-//	.esd_recover = lcm_init,
-	#endif
 #if (LCM_DSI_CMD_MODE)
     .update         = lcm_update,
 #endif
 };
-
