@@ -559,7 +559,7 @@ static unsigned int lcm_compare_id(void)
 
 LCM_DRIVER otm8018b_dsi_vdo_lcm_drv = 
 {
-    .name			= "otm8018b_fwvga_dsi_vdo_boe",
+    .name			= "otm8018b_dsi_vdo_lcm_drv_dnj",
 	.set_util_funcs = lcm_set_util_funcs,
 	.get_params     = lcm_get_params,
 	.init           = lcm_init,
