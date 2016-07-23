@@ -235,27 +235,21 @@ static void lcm_set_util_funcs(const LCM_UTIL_FUNCS *util)
 static void lcm_get_params(LCM_PARAMS *params)
 {
 		memset(params, 0, sizeof(LCM_PARAMS));
-		params->type   = LCM_TYPE_DSI;
-		params->width  = FRAME_WIDTH;
-		params->height = FRAME_HEIGHT;
-		params->dbi.te_mode 				= LCM_DBI_TE_MODE_VSYNC_ONLY;
-		params->dbi.te_edge_polarity		= LCM_POLARITY_RISING;
-
-#if (LCM_DSI_CMD_MODE)
-		params->dsi.mode   = CMD_MODE;
-#else
-		params->dsi.mode   = BURST_VDO_MODE;
-#endif
-
-		params->dsi.LANE_NUM				= LCM_TWO_LANE;
-		params->dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
-		params->dsi.data_format.trans_seq   = LCM_DSI_TRANS_SEQ_MSB_FIRST;
-		params->dsi.data_format.padding     = LCM_DSI_PADDING_ON_LSB;
-		params->dsi.data_format.format      = LCM_DSI_FORMAT_RGB888;
-		params->dsi.packet_size=256;
-		params->dsi.intermediat_buffer_num = 2;
-		params->dsi.PS=LCM_PACKED_PS_24BIT_RGB888;
-		params->dsi.word_count=480*3;
+		params->type   							= LCM_TYPE_DSI;
+		params->width  							= FRAME_WIDTH;
+		params->height 							= FRAME_HEIGHT;
+		params->dbi.te_mode 		    				= LCM_DBI_TE_MODE_VSYNC_ONLY;
+		params->dbi.te_edge_polarity	    				= LCM_POLARITY_RISING;
+		params->dsi.mode   						= BURST_VDO_MODE;
+		params->dsi.LANE_NUM		    				= LCM_TWO_LANE;
+		params->dsi.data_format.color_order 				= LCM_COLOR_ORDER_RGB;
+		params->dsi.data_format.trans_seq   				= LCM_DSI_TRANS_SEQ_MSB_FIRST;
+		params->dsi.data_format.padding     				= LCM_DSI_PADDING_ON_LSB;
+		params->dsi.data_format.format      				= LCM_DSI_FORMAT_RGB888;
+		params->dsi.packet_size						= 256;
+		params->dsi.intermediat_buffer_num 				= 2;
+		params->dsi.PS							= LCM_PACKED_PS_24BIT_RGB888;
+		params->dsi.word_count						= 480*3;
 		params->dsi.vertical_sync_active				= 84;
 		params->dsi.vertical_backporch					= 28;
 		params->dsi.vertical_frontporch					= 28;
@@ -265,10 +259,10 @@ static void lcm_get_params(LCM_PARAMS *params)
 		params->dsi.horizontal_frontporch				= 33;
 		params->dsi.horizontal_active_pixel				= FRAME_WIDTH;
 		params->dsi.horizontal_blanking_pixel 				= 60;
-		params->dsi.compatibility_for_nvk = 0;
-		params->dsi.pll_div1=1;
-		params->dsi.pll_div2=1;	
-		params->dsi.fbk_div =28;
+		params->dsi.compatibility_for_nvk 				= 0;
+		params->dsi.pll_div1						= 1;
+		params->dsi.pll_div2						= 1;	
+		params->dsi.fbk_div 						= 28;
 }
 
 
