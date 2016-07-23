@@ -1,27 +1,9 @@
-#ifdef BUILD_LK
-#else
 #include <linux/string.h>
-#if defined(BUILD_UBOOT)
-#include <asm/arch/mt_gpio.h>
-#else
 #include <mach/mt_gpio.h>
-#endif
-#endif
 #include "lcm_drv.h"
-
-#ifdef BUILD_LK
-#define LCM_PRINT printf
-#else
-#if defined(BUILD_UBOOT)
-	#define LCM_PRINT printf
-#else
-	#define LCM_PRINT printk
-#endif
-#endif
-
+#define LCM_PRINT printk
 #define LCM_DBG(fmt, arg...) \
 	LCM_PRINT("[LCM-OTM8018B-DSI] %s (line:%d) :" fmt "\r\n", __func__, __LINE__, ## arg)
-
 
 // ---------------------------------------------------------------------------
 //  Local Constants
@@ -32,10 +14,6 @@
 
 #define REGFLAG_DELAY             							0xFE
 #define REGFLAG_END_OF_TABLE      							0xFFF   // END OF REGISTERS MARKER
-
-#define LCM_ID_OTM8018B	0x8009
-
-#define LCM_DSI_CMD_MODE									0
 
 #ifndef TRUE
     #define   TRUE     1
@@ -218,27 +196,6 @@ static struct LCM_setting_table lcm_deep_sleep_mode_in_setting[] = {
 	{REGFLAG_END_OF_TABLE, 0x00, {}}
 };
 
-
-static struct LCM_setting_table lcm_compare_id_setting[] = {
-
-	{0x00,	1,	{0x00}},
-	{0xff,	3,	{0x80,0x09,0x01}}, 
-	{REGFLAG_DELAY, 10, {}},
-
-	{0x00,	1,	{0x80}},
-	{0xff,	2,	{0x80,0x09}}, 
-	{REGFLAG_DELAY, 10, {}},
-	
-        {0x00,  1,      {0xC6}},
-        {0xB0,  1,      {0x03}},
-        
-	{0x00,	1,	{0x02}},
-
-	{REGFLAG_END_OF_TABLE, 0x00, {}}
-
-};
-
-
 static void push_table(struct LCM_setting_table *table, unsigned int count, unsigned char force_update)
 {
 	unsigned int i;
@@ -343,97 +300,14 @@ static struct LCM_setting_table read_protect[] = {
         {0xB0,  1,      {0x03}},
 };
 
-#ifndef BUILD_LK
-static unsigned int check_display_normal(void)
-{
-#if 1
-	unsigned int normal=0;
-	unsigned char buffer1[1];
-	unsigned char buffer2[1];
-	unsigned char buffer3[1];
-	unsigned char buffer4[1];
-	unsigned int array[16]; 
-	Tinno_Open_Mipi_HS_Read();
-	array[0] = 0x00013700;// set return byte number
-	dsi_set_cmdq(array, 1, 1);
-	read_reg_V2(0x0A, &buffer1, 1);
-	LCM_DBG("[Magnum] --test ic normal == 0x%x\n",buffer1[0]);
-        if(buffer1[0] == 0x9c)
-	 	return 1;
-	else
-		return 0;
-#endif
-}
-#endif
-
 static void lcm_resume(void)
 {
 	push_table(lcm_sleep_out_setting, sizeof(lcm_sleep_out_setting) / sizeof(struct LCM_setting_table), 1);
 }
 
-#if defined(BUILD_UBOOT) || defined(BUILD_LK)
-#include "cust_adc.h"
-#define LCM_MAX_VOLTAGE 600 
-#define LCM_MIN_VOLTAGE  300 
-
-extern int IMM_GetOneChannelValue(int dwChannel, int data[4], int* rawdata);
-
-static unsigned int lcm_adc_read_chip_id()
-{
-	int data[4] = {0, 0, 0, 0};
-	int tmp = 0, rc = 0, iVoltage = -1;
-	rc = IMM_GetOneChannelValue(AUXADC_LCD_ID_CHANNEL, data, &tmp);
-	if(rc < 0) {
-		printf("read LCD_ID vol error--Liu\n");
-		return 0;
-	}
-	else {
-		iVoltage = (data[0]*1000) + (data[1]*10) + (data[2]);
-		printf("read LCD_ID success, data[0]=%d, data[1]=%d, data[2]=%d, data[3]=%d, iVoltage=%d\n", 
-			data[0], data[1], data[2], data[3], iVoltage);
-		if(LCM_MIN_VOLTAGE < iVoltage &&
-			iVoltage < LCM_MAX_VOLTAGE)
-			return 0;
-		else
-			return 0;
-	}
-	return 0;
-}
-#endif	
-
 static unsigned int lcm_compare_id(void)
 {
-	int array[4];
-	char buffer[5];
-	char id_high=0;
-	char id_low=0;
-	int id=0;
-
-	SET_RESET_PIN(1);
-	SET_RESET_PIN(0);
-	MDELAY(50);
-	SET_RESET_PIN(1);
-	MDELAY(100);
-
-#if 1
-	push_table(lcm_compare_id_setting, sizeof(lcm_compare_id_setting) / sizeof(struct LCM_setting_table), 1);
-
-	array[0] = 0x00023700;// set return byte number
-	dsi_set_cmdq(array, 1, 1);
-
-	read_reg_V2(0xD2, &buffer, 2);
-	LCM_DBG("buffer0 == 0x%02x, buffer1 == 0x%02x \n",buffer[0],buffer[1]);
-
-	id = buffer[0]<<8 |buffer[1]; 
-
-	#if defined(BUILD_UBOOT)||defined(BUILD_LK);
-	#else
-		printk("OTM8018B 0x%x , 0x%x , 0x%x \n",buffer[0],buffer[1],id);
-	#endif
-#endif
-
-
-	return (id == LCM_ID_OTM8018B)?1:0;
+    return 1;
 }
 
 
@@ -445,8 +319,5 @@ LCM_DRIVER otm8018b_dsi_vdo_lcm_drv =
 	.init           = lcm_init,
 	.suspend        = lcm_suspend,
 	.resume         = lcm_resume,
-	.compare_id    = lcm_compare_id,	
-#if (LCM_DSI_CMD_MODE)
-    .update         = lcm_update,
-#endif
+	.compare_id    = lcm_compare_id,
 };
